@@ -68,6 +68,7 @@ select{font:inherit;color:var(--fg);background:var(--card2);border:1px solid var
 #rules table{border-collapse:collapse;width:100%;font-size:14px;margin:6px 0}
 #rules td,#rules th{border:1px solid var(--bd);padding:6px 8px;text-align:left;vertical-align:top}
 #rules p,#rules li{margin:4px 0}
+@media (max-width:560px){.tabs button{min-width:0;padding:7px 8px;font-size:13.5px}.tr{top:6px;right:6px}.tl{top:44px;left:6px;right:6px;max-width:none}#prompt{font-size:13px;padding:6px 9px;background:rgba(15,18,24,.72)}#prompt .sub{display:none}.bc{bottom:6px;gap:5px}.bc button{font-size:13px;padding:8px 9px}.bc kbd{display:none}}
 .pill{display:inline-block;padding:0 7px;border-radius:99px;background:var(--card2);border:1px solid var(--bd);font-size:12.5px}
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js"}}</script>
@@ -1028,7 +1029,7 @@ window.addEventListener('pointerup', e => {
 // =================================================================== camera / loop
 function resize() {
   const w = stage.clientWidth || 700;
-  const h = clamp(Math.round(w * 0.64), 380, 640);
+  const h = w < 560 ? clamp(Math.round(w * 1.25), 400, 640) : clamp(Math.round(w * 0.64), 380, 640);
   stage.style.height = h + 'px';
   renderer.setSize(w, h);
   persCam.aspect = w / h; persCam.updateProjectionMatrix();
