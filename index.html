@@ -3,93 +3,113 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Precedenza — right-of-way trainer</title>
+<title>Precedenza · right-of-way trainer for the Italian driving test</title>
+<meta name="description" content="Practise Italian right-of-way rules: junctions, roundabouts, traffic lights, pedestrians, live traffic.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path d='M6 10h52L32 56z' fill='%23c8102e'/><path d='M17 16h30L32 44z' fill='white'/></svg>">
 <style>
 :root{
-  --fg: var(--foreground, #1d1d1f);
-  --mut: var(--muted-foreground, #6b6b70);
-  --bd: var(--border, #d9d9de);
-  --card2: var(--card, #f5f5f7);
-  --acc: var(--primary, #2563eb);
-  --accfg: var(--primary-foreground, #fff);
-  --ok: var(--success, #16a34a);
-  --bad: var(--destructive, #dc2626);
-  --warn: var(--warning, #d97706);
-  --rad: var(--radius, 10px);
+  --bg:#0e1116; --panel:#161a21; --panel2:#1d222b; --line:#2a313c; --fg:#e8ebf0; --mut:#98a2b3;
+  --amber:#ffb020; --amber2:#ffcf6b; --ok:#34c759; --bad:#ff4d4f; --warn:#ff9f0a; --blue:#4c8dff; --rad:14px;
+  color-scheme: dark;
 }
-body{margin:0;color:var(--fg);font-family:var(--font-sans,system-ui,-apple-system,"Segoe UI",sans-serif);font-size:15px;line-height:1.45}
-#app{max-width:1100px;margin:0 auto}
-.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
-.tabs button{flex:1 1 auto;min-width:120px}
-button{font:inherit;color:var(--fg);background:var(--card2);border:1px solid var(--bd);border-radius:calc(var(--rad) - 2px);padding:8px 12px;cursor:pointer}
-button:hover{border-color:var(--acc)}
-button.on{background:var(--acc);color:var(--accfg);border-color:var(--acc)}
-button:disabled{opacity:.45;cursor:default}
-#stage{position:relative;border-radius:var(--rad);overflow:hidden;background:#9cc4e4;touch-action:none;user-select:none;-webkit-user-select:none}
-#stage canvas{display:block}
-.hud{position:absolute;pointer-events:none}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+#app{max-width:1180px;margin:0 auto;padding:18px 18px 40px}
+header{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.logo{width:40px;height:40px;flex:none}
+header h1{font-size:20px;margin:0;letter-spacing:.2px}
+header p{margin:0;color:var(--mut);font-size:13px}
+header .sp{flex:1}
+.tabs{display:flex;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:5px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none}
+.tabs button{flex:1 0 auto;background:transparent;border:0;color:var(--mut);padding:9px 14px;border-radius:9px;font:inherit;font-weight:600;font-size:14px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:8px;justify-content:center}
+.tabs button svg{width:17px;height:17px;opacity:.85}
+.tabs button:hover{color:var(--fg);background:var(--panel2)}
+.tabs button.on{background:var(--amber);color:#1a1300}
+#stage{position:relative;border-radius:var(--rad);overflow:hidden;background:#a9c6dc;touch-action:none;user-select:none;-webkit-user-select:none;border:1px solid var(--line);box-shadow:0 20px 50px -20px rgba(0,0,0,.6)}
+#stage canvas{display:block;cursor:grab}
+.hud{position:absolute;pointer-events:none;z-index:2}
 .hud>*{pointer-events:auto}
-.tl{left:10px;top:10px;max-width:min(520px,62%)}
-.tr{right:10px;top:10px;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
-.bc{left:0;right:0;bottom:10px;display:flex;justify-content:center;flex-wrap:wrap;gap:8px;padding:0 10px}
-#prompt{background:rgba(15,18,24,.82);color:#fff;border-radius:8px;padding:9px 12px;font-size:14px}
-#prompt b{color:#ffd54a}
-#prompt .sub{color:#c9ced8;font-size:12.5px;margin-top:3px}
-.seg{display:flex;background:rgba(15,18,24,.75);border-radius:8px;padding:3px;gap:2px}
-.seg button{background:transparent;color:#dfe3ea;border:0;padding:5px 9px;font-size:12.5px}
+.tl{left:12px;top:12px;max-width:min(560px,64%)}
+.tr{right:12px;top:12px;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.bc{left:0;right:0;bottom:12px;display:flex;justify-content:center;flex-wrap:wrap;gap:8px;padding:0 12px}
+.glass{background:rgba(14,17,22,.78);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.08);border-radius:11px}
+#prompt{padding:10px 14px;font-size:14.5px;color:#fff}
+#prompt b{color:var(--amber2)}
+#prompt .sub{color:#b7c0cf;font-size:12.5px;margin-top:3px}
+.seg{display:flex;padding:3px;gap:2px}
+.seg button{background:transparent;color:#cfd6e2;border:0;padding:6px 10px;font:inherit;font-size:12.5px;font-weight:600;border-radius:8px;cursor:pointer}
 .seg button.on{background:#fff;color:#111}
-.bc button{background:rgba(15,18,24,.86);color:#fff;border:1px solid rgba(255,255,255,.25);font-size:14.5px;padding:10px 14px;border-radius:9px}
-.bc button:hover{border-color:#ffd54a}
-.bc button.on{background:#ffd54a;color:#111;border-color:#ffd54a}
-.bc button.go{background:#16a34a;border-color:#16a34a;font-weight:700;min-width:110px}
-.bc button.go:disabled{background:rgba(15,18,24,.86);border-color:rgba(255,255,255,.25)}
-.bc kbd{font-size:11px;opacity:.65;margin-left:6px;font-family:inherit}
-#flash{position:absolute;left:50%;top:24%;transform:translate(-50%,-50%);padding:10px 18px;border-radius:10px;font-weight:700;font-size:20px;color:#fff;opacity:0;transition:opacity .25s;pointer-events:none;text-align:center;max-width:80%}
-#flash.ok{background:rgba(22,163,74,.92)}
-#flash.bad{background:rgba(220,38,38,.92)}
-#flash.warn{background:rgba(217,119,6,.92)}
-#flash.show{opacity:1}
-#timer{position:absolute;left:0;top:0;height:4px;background:#ffd54a;width:0}
-#panel{margin-top:10px;display:flex;flex-direction:column;gap:8px}
-#feedback{border:1px solid var(--bd);border-radius:var(--rad);padding:12px 14px;min-height:40px}
-#feedback h3{margin:0 0 6px;font-size:16px}
+.bc button{background:rgba(14,17,22,.86);backdrop-filter:blur(6px);color:#fff;border:1px solid rgba(255,255,255,.18);font:inherit;font-weight:600;font-size:14.5px;padding:11px 15px;border-radius:11px;cursor:pointer;min-width:52px}
+.bc button:hover{border-color:var(--amber)}
+.bc button.on{background:var(--amber);color:#1a1300;border-color:var(--amber)}
+.bc button.go{background:#16a34a;border-color:#22c55e;min-width:120px}
+.bc button.go:disabled{background:rgba(14,17,22,.86);border-color:rgba(255,255,255,.18);color:#9aa3b2}
+.bc button:disabled{opacity:.55;cursor:default}
+.bc button.go:disabled{opacity:1}
+.bc kbd{font:inherit;font-size:11px;opacity:.6;margin-left:7px;font-weight:500}
+#flash{position:absolute;left:50%;top:22%;transform:translate(-50%,-50%) scale(.96);padding:11px 20px;border-radius:12px;font-weight:800;font-size:21px;color:#fff;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;text-align:center;max-width:82%;z-index:3}
+#flash.ok{background:rgba(22,163,74,.94)} #flash.bad{background:rgba(220,38,38,.94)} #flash.warn{background:rgba(217,119,6,.94)}
+#flash.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#timer{position:absolute;left:0;top:0;height:4px;width:0;z-index:3;transition:width .1s linear}
+#panel{margin-top:12px;display:grid;gap:10px}
+#feedback{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:14px 18px;min-height:52px}
+#feedback h3{margin:0 0 6px;font-size:16.5px}
 #feedback .ok{color:var(--ok)} #feedback .bad{color:var(--bad)} #feedback .warn{color:var(--warn)}
-#feedback ul{margin:6px 0 0;padding-left:20px}
-#feedback li{margin:3px 0}
+#feedback ul{margin:6px 0 0;padding-left:20px} #feedback li{margin:4px 0}
+#feedback b{color:#fff}
 .it{font-style:italic;color:var(--mut)}
-.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.row{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:0 4px}
 .row .grow{flex:1}
 #stats{color:var(--mut);font-size:13px}
-.opt{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mut)}
-select{font:inherit;color:var(--fg);background:var(--card2);border:1px solid var(--bd);border-radius:6px;padding:4px 6px}
-#rules{display:none;border:1px solid var(--bd);border-radius:var(--rad);padding:6px 16px 14px}
-#rules h2{font-size:18px;margin:14px 0 6px}
-#rules h3{font-size:15px;margin:12px 0 4px}
-#rules table{border-collapse:collapse;width:100%;font-size:14px;margin:6px 0}
-#rules td,#rules th{border:1px solid var(--bd);padding:6px 8px;text-align:left;vertical-align:top}
-#rules p,#rules li{margin:4px 0}
-@media (max-width:560px){.tabs button{min-width:0;padding:7px 8px;font-size:13.5px}.tr{top:6px;right:6px}.tl{top:44px;left:6px;right:6px;max-width:none}#prompt{font-size:13px;padding:6px 9px;background:rgba(15,18,24,.72)}#prompt .sub{display:none}.bc{bottom:6px;gap:5px}.bc button{font-size:13px;padding:8px 9px}.bc kbd{display:none}}
-.pill{display:inline-block;padding:0 7px;border-radius:99px;background:var(--card2);border:1px solid var(--bd);font-size:12.5px}
+.opt{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--mut)}
+.opt input{accent-color:var(--amber)}
+select{font:inherit;font-size:13px;color:var(--fg);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:4px 8px}
+#rules{display:none;background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:8px 22px 20px}
+#rules h2{font-size:18px;margin:18px 0 6px;color:var(--amber2)}
+#rules table{border-collapse:collapse;width:100%;font-size:14px;margin:8px 0}
+#rules td,#rules th{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+#rules th{background:var(--panel2)}
+#rules p,#rules li{margin:5px 0}
+footer{color:var(--mut);font-size:12px;margin-top:18px;text-align:center}
+@media (max-width:640px){
+  #app{padding:10px 8px 30px}
+  header p{display:none}
+  .tabs button{padding:8px 10px;font-size:13px}
+  .tabs button span.long{display:none}
+  .tl{top:48px;left:8px;right:8px;max-width:none}
+  .tr{top:8px;right:8px}
+  #stage.looking .tl{top:90px}
+  #prompt{font-size:13px;padding:7px 10px}
+  #prompt .sub{display:none}
+  .bc{bottom:8px;gap:5px}
+  .bc button{font-size:13px;padding:9px 10px;min-width:40px}
+  .bc kbd{display:none}
+  #feedback{padding:12px 14px}
+}
 </style>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js"}}</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
 </head>
 <body>
 <div id="app">
-  <div class="tabs" id="tabs">
-    <button data-m="m1" class="on">1 · Read the signal</button>
-    <button data-m="m2">2 · Who goes first?</button>
-    <button data-m="m3">3 · Roundabout live</button>
-    <button data-m="rules">Rules cheat-sheet</button>
-  </div>
+  <header>
+    <svg class="logo" viewBox="0 0 64 64"><path d="M5 9h54L32 58z" fill="#c8102e" stroke="#fff" stroke-width="3" stroke-linejoin="round"/><path d="M18 16h28L32 42z" fill="#fff"/></svg>
+    <div><h1>Precedenza</h1><p>Right-of-way trainer for the Italian driving test: junctions, roundabouts, lights, pedestrians.</p></div>
+    <div class="sp"></div>
+  </header>
+  <nav class="tabs" id="tabs">
+    <button data-m="m1" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h12M12 6l6 6-6 6"/><circle cx="20" cy="5" r="2" fill="currentColor"/></svg>Read <span class="long">the signal</span></button>
+    <button data-m="m2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h12M8 12h12M8 18h12"/><path d="M3 6h1M3 12h1M3 18h1"/></svg>Who <span class="long">goes first?</span></button>
+    <button data-m="m3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg>Junction <span class="long">live</span></button>
+    <button data-m="m4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="6"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>Roundabout <span class="long">live</span></button>
+    <button data-m="rules"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4h11l3 3v13H5z"/><path d="M8 10h8M8 14h8M8 18h5"/></svg>Rules</button>
+  </nav>
   <div id="play">
     <div id="stage">
       <div id="timer"></div>
-      <div class="hud tl"><div id="prompt">Loading 3D…</div></div>
+      <div class="hud tl"><div id="prompt" class="glass">Loading 3D…</div></div>
       <div class="hud tr">
-        <div class="seg" id="views">
-          <button data-v="top" class="on">Top</button><button data-v="chase">Behind</button><button data-v="driver">Driver</button>
-        </div>
-        <div class="seg" id="look" style="display:none"><button data-l="1">◀ look</button><button data-l="0">ahead</button><button data-l="-1">look ▶</button></div>
+        <div class="seg glass" id="views"><button data-v="map">Map</button><button data-v="orbit">3D</button><button data-v="chase">Behind</button><button data-v="driver">Driver</button></div>
+        <div class="seg glass" id="look" style="display:none"><button data-l="1">◀ look</button><button data-l="0">ahead</button><button data-l="-1">look ▶</button></div>
       </div>
       <div class="hud bc" id="answers"></div>
       <div id="flash"></div>
@@ -98,986 +118,72 @@ select{font:inherit;color:var(--fg);background:var(--card2);border:1px solid var
       <div id="feedback"></div>
       <div class="row">
         <span id="stats" class="grow"></span>
-        <label class="opt" id="optHints" style="display:none"><input type="checkbox" id="hints" checked> hints (red = will pass in front of you, green = exiting before you)</label>
-        <label class="opt" id="optTraffic" style="display:none">traffic <select id="traffic"><option value="1">light</option><option value="2" selected>medium</option><option value="3">heavy</option></select></label>
+        <label class="opt" id="optHints" style="display:none"><input type="checkbox" id="hints" checked> hints</label>
+        <label class="opt" id="optTraffic" style="display:none">traffic <select id="traffic"><option value="1">light</option><option value="2" selected>busy</option><option value="3">rush hour</option></select></label>
       </div>
     </div>
   </div>
 
   <div id="rules">
     <h2>The order of authority</h2>
-    <p>Police officer &gt; traffic light &gt; signs &gt; general rules. Everything below assumes no lights and no police.</p>
+    <p>Police officer &gt; traffic lights &gt; signs &gt; general rules. A <b>flashing amber</b> light counts as no light at all: use the signs or the general rules.</p>
 
     <h2>1 · Signs decide first</h2>
     <table>
       <tr><th>Sign</th><th>Meaning</th></tr>
-      <tr><td>🔻 <b>Dare precedenza</b> (upside-down triangle; dashed line + painted triangle)</td><td>Slow down and give way to <b>everyone</b> on the road you are entering, from <b>both</b> sides. You don't have to stop if it's clear.</td></tr>
-      <tr><td>🛑 <b>STOP</b> (solid line + "STOP" on the road)</td><td>A <b>full stop</b> at the line <b>every time</b>, even when it's empty (wheels completely still). Then give way to everyone. At the exam, a rolling stop is an error.</td></tr>
-      <tr><td>⚠️ <b>Intersezione con diritto di precedenza</b> (triangle with a cross) / ◆ <b>Strada con diritto di precedenza</b></td><td>You are on the main road. Cars on the side roads give way to you. Between two cars on the main road, rule 3 still applies.</td></tr>
+      <tr><td>🔻 <b>Dare precedenza</b> (dashed line + painted triangle)</td><td>Give way to <b>everyone</b> on the road you're entering, from <b>both</b> sides. You only stop if needed.</td></tr>
+      <tr><td>🛑 <b>STOP</b> (solid line + "STOP" painted on the road)</td><td><b>Full stop at the line, every time</b>, even if the road is empty (wheels completely still). Then give way to everyone.</td></tr>
+      <tr><td>⚠️ <b>Intersezione con diritto di precedenza</b> / ◆ <b>Strada con diritto di precedenza</b></td><td>You're on the main road, so the side roads give way to you. Between cars on the main road, rule 3 still applies.</td></tr>
     </table>
 
     <h2>2 · No signs → <i>precedenza a destra</i></h2>
-    <p>Give way to anyone coming <b>from your right</b>. You have priority over anyone coming from your left.</p>
+    <p>Give way to whoever comes <b>from your right</b>. You have priority over whoever comes from your left. If <b>every</b> car has someone on its right (deadlock), the drivers sort it out by eye contact and one goes first, carefully.</p>
 
     <h2>3 · Turning left → let oncoming traffic go</h2>
-    <p>If you turn left, you also give way to the car <b>coming toward you</b> when it goes straight or turns right. If you and the oncoming car <b>both</b> turn left, you can go <b>together</b>: each of you turns before the centre of the intersection, passing in front of the other (art. 154: turn "close to the centre and to the left of it").</p>
+    <p>When you turn left, you also give way to <b>oncoming</b> traffic that goes straight or turns right. <b>This applies on a green light too!</b> If two cars facing each other both turn left, they go <b>together</b>, passing in front of each other (art. 154: turn "close to the centre and to the left of it").</p>
 
-    <h2>4 · Special cases</h2>
+    <h2>4 · Traffic lights</h2>
     <ul>
-      <li>Coming <b>out of a driveway, a car park, a petrol station or a dirt road</b>: give way to everyone.</li>
-      <li>Trams (veicoli su rotaia) have priority at unmarked junctions, even when they come from your left.</li>
-      <li>Emergency vehicles with siren + blue lights: always let them through.</li>
+      <li><b>Green</b>: you may go, but still give way to pedestrians on the crossing you turn across, and (when turning left) to oncoming traffic.</li>
+      <li><b>Amber</b>: stop, unless you're so close that you can't stop safely. If you're standing at the line, you stay there.</li>
+      <li><b>Red</b>: stop at the line.</li>
     </ul>
 
-    <h2>5 · Roundabouts (rotatoria)</h2>
-    <p>Almost all Italian roundabouts have a <b>Dare precedenza</b> sign at the entry, so <b>cars already circulating go first</b>. Traffic goes anticlockwise, so they come <b>from your left</b>. (Old roundabouts with no triangle at the entry follow precedenza a destra. They're rare; ask your instructor if your exam area has one.)</p>
-    <p><b>Your own blinker</b> (what autoscuole teach and examiners expect):</p>
+    <h2>5 · Pedestrians, ambulances, queues</h2>
+    <ul>
+      <li><b>Zebra crossing</b> (strisce pedonali): give way to pedestrians who are crossing <b>or about to cross</b>, including when you <b>turn</b> into a road with a crossing. Never stop your car on the stripes.</li>
+      <li><b>Ambulance / police with siren and blue lights</b>: everybody lets them through, whatever the signs say.</li>
+      <li>Coming out of a <b>driveway, car park, petrol station or dirt road</b>: give way to everyone.</li>
+      <li>Trams have priority at unmarked junctions, even from your left.</li>
+    </ul>
+
+    <h2>6 · Roundabouts (rotatoria)</h2>
+    <p>Nearly all have <b>Dare precedenza</b> at the entry, so <b>cars already circulating go first</b>. They come <b>from your left</b>. Don't enter if there's no room to keep moving.</p>
     <table>
       <tr><th>Your exit</th><th>Entering</th><th>Before exiting</th></tr>
       <tr><td>1st exit (right)</td><td>➡ right</td><td>➡ keep it on</td></tr>
-      <tr><td>Straight on (2nd)</td><td>nothing</td><td>➡ right, <b>after</b> passing the exit before yours</td></tr>
+      <tr><td>Straight on</td><td>nothing</td><td>➡ right, <b>after</b> passing the exit before yours</td></tr>
       <tr><td>Left / beyond halfway / U-turn</td><td>⬅ left</td><td>switch to ➡ right after passing the exit before yours</td></tr>
     </table>
-    <p><b>Reading the car coming from your left:</b></p>
-    <ul>
-      <li>➡ Right blinker, <b>and it hasn't reached your road's exit yet</b> → it's probably leaving into your road. It doesn't cross your entry, so you can go. <b>Confirm it</b>: its nose and wheels turn outward.</li>
-      <li>No blinker or ⬅ left blinker → it stays in and will pass in front of you. Wait.</li>
-      <li>➡ Right blinker but <b>already past</b> your road's exit → it's going to the <b>next</b> exit, so it passes in front of you. Wait.</li>
-    </ul>
+    <p>Reading the car coming from your left: <b>right blinker and it hasn't reached your road's exit yet</b> → it's leaving into your road, so you can go (check that its wheels turn out). <b>No blinker, left blinker, or right blinker but already past your road's exit</b> → it passes in front of you, so wait.</p>
 
-    <h2>6 · Reading blinkers: the mirror trap</h2>
-    <p>A blinker shows the car's <b>own</b> left or right, so imagine sitting in its seat. Where it ends up, <b>from where you sit</b>:</p>
+    <h2>7 · Reading blinkers: the mirror trap</h2>
     <table>
       <tr><th>The car comes…</th><th>its LEFT blinker</th><th>no blinker</th><th>its RIGHT blinker</th></tr>
-      <tr><td>toward you (oncoming)</td><td>road on <b>your right</b>, <b>crosses your path</b>. The light is on <b>your right</b> side of the picture!</td><td>passes beside you</td><td>road on <b>your left</b>. The light is on <b>your left</b> side of the picture</td></tr>
-      <tr><td>from your right</td><td>into <b>your road</b>, toward you</td><td>across in front of you, to your left</td><td>road straight ahead (turns away)</td></tr>
-      <tr><td>from your left</td><td>road straight ahead</td><td>across in front of you, to your right</td><td>into <b>your road</b>, toward you</td></tr>
+      <tr><td>toward you</td><td>road on <b>your right</b>, crossing your path. The light flashes on <b>your right</b> side!</td><td>passes beside you</td><td>road on <b>your left</b>. The light flashes on <b>your left</b> side</td></tr>
+      <tr><td>from your right</td><td>into <b>your road</b>, toward you</td><td>across in front of you</td><td>road straight ahead (turns away)</td></tr>
+      <tr><td>from your left</td><td>road straight ahead</td><td>across in front of you</td><td>into <b>your road</b>, toward you</td></tr>
     </table>
-    <p>Quick checks: a car from your right shows you its <b>left</b> side, so look for its <b>front corners</b>. "No blinker" usually means straight on, but people forget their blinker, so watch the wheels and the car's line too.</p>
 
-    <h2>7 · Exam habits</h2>
+    <h2>8 · Exam habits</h2>
     <ul>
-      <li>Look <b>left – right – left</b> before you go. At a roundabout, start looking left while you're still approaching, so you've already picked your gap when you reach the line.</li>
-      <li><b>Hesitating too much is also an error.</b> If the gap is clearly safe, go decisively.</li>
-      <li>Not sure whether the other driver has seen you? Slow down and make eye contact. You can only <i>give</i> priority; you can never <i>take</i> it.</li>
-    </ul>
-
-    <h2>Suggested practice for this week (≈30 min/day)</h2>
-    <ul>
-      <li>10 min of <b>Read the signal</b>: first in Top view, then in <b>Driver</b> view. Aim for answers under 2 s.</li>
-      <li>10 min of <b>Who goes first?</b>: aim for 10 perfect rounds in a row.</li>
-      <li>10 min of <b>Roundabout live</b>: hints on at first, then off and in Driver view, on heavy traffic.</li>
+      <li>Look <b>left – right – left</b>. At roundabouts, start looking left while you're still approaching.</li>
+      <li><b>Too much hesitation is also an error.</b> When it's clearly your turn, go decisively.</li>
+      <li>Not sure the other driver has seen you? Slow down and make eye contact. You can only <i>give</i> priority, never <i>take</i> it.</li>
     </ul>
   </div>
+  <footer>Practice tool. Always follow your instructor and the Codice della Strada.</footer>
 </div>
-
-<script type="module">
-import * as THREE from 'three';
-
-// =================================================================== utils
-const $ = s => document.querySelector(s);
-const TAU = Math.PI * 2;
-const rand = (a, b) => a + Math.random() * (b - a);
-const pick = a => a[Math.floor(Math.random() * a.length)];
-const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
-const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
-
-// =================================================================== geometry
-// Arms: 0 = South (you), 1 = East (your right), 2 = North (ahead), 3 = West (your left)
-// World: x = east, z = south. Right-hand traffic. Roundabouts run anticlockwise.
-const S_ = 0, E_ = 1, N_ = 2, W_ = 3;
-const OUT = [[0, 1], [1, 0], [0, -1], [-1, 0]];
-const ARM_ANG = [Math.PI / 2, 0, -Math.PI / 2, Math.PI];
-const ARM_ROT = [0, -Math.PI / 2, Math.PI, Math.PI / 2];
-const LANE = 1.75, HW = 3.5, STOP_R = 7.5, FAR = 58, CAR_L = 4.2, CAR_W = 1.8;
-const RB = { R: 12.5, island: 9.5, outer: 15.5, d: 0.42, yieldR: 17 };
-const turnOf = (a, b) => (b - a + 4) % 4; // 1 right, 2 straight, 3 left, 0 U
-
-function lanePt(a, inbound, s) {
-  const [ox, oz] = OUT[a];
-  const dx = inbound ? -ox : ox, dz = inbound ? -oz : oz;
-  return [ox * s - dz * LANE, oz * s + dx * LANE];
-}
-function lineIntersect(p, d, q, e) {
-  const cr = d[0] * e[1] - d[1] * e[0];
-  const t = ((q[0] - p[0]) * e[1] - (q[1] - p[1]) * e[0]) / cr;
-  return [p[0] + d[0] * t, p[1] + d[1] * t];
-}
-const Cpt = (t, R = RB.R) => [R * Math.cos(t), R * Math.sin(t)];
-const Tan = t => [Math.sin(t), -Math.cos(t)]; // direction of travel (anticlockwise on screen)
-
-class Path {
-  constructor() { this.p = []; this.mk = {}; }
-  add(x, z) { const n = this.p.length; if (n) { const q = this.p[n - 1]; if (Math.abs(q[0] - x) + Math.abs(q[1] - z) < 1e-6) return this; } this.p.push([x, z]); return this; }
-  line(a, b, step = 0.5) { const L = Math.hypot(b[0] - a[0], b[1] - a[1]), n = Math.max(1, Math.ceil(L / step)); for (let i = 0; i <= n; i++) { const t = i / n; this.add(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t); } return this; }
-  quad(a, c, b, n = 28) { for (let i = 0; i <= n; i++) { const t = i / n, u = 1 - t; this.add(u * u * a[0] + 2 * u * t * c[0] + t * t * b[0], u * u * a[1] + 2 * u * t * c[1] + t * t * b[1]); } return this; }
-  cubic(a, b, c, d, n = 30) { for (let i = 0; i <= n; i++) { const t = i / n, u = 1 - t, w0 = u * u * u, w1 = 3 * u * u * t, w2 = 3 * u * t * t, w3 = t * t * t; this.add(w0 * a[0] + w1 * b[0] + w2 * c[0] + w3 * d[0], w0 * a[1] + w1 * b[1] + w2 * c[1] + w3 * d[1]); } return this; }
-  arc(R, t0, t1) { const n = Math.max(2, Math.ceil(Math.abs(t1 - t0) * R / 0.4)); for (let i = 0; i <= n; i++) { const t = t0 + (t1 - t0) * i / n; this.add(R * Math.cos(t), R * Math.sin(t)); } return this; }
-  mark(n) { this.mk[n] = this.p.length - 1; return this; }
-  done() {
-    const c = [0];
-    for (let i = 1; i < this.p.length; i++) c.push(c[i - 1] + Math.hypot(this.p[i][0] - this.p[i - 1][0], this.p[i][1] - this.p[i - 1][1]));
-    this.cum = c; this.len = c[c.length - 1]; this.s = {};
-    for (const k in this.mk) this.s[k] = c[this.mk[k]];
-    return this;
-  }
-  at(s) {
-    const p = this.p, c = this.cum; let i;
-    if (s <= 0) i = 0; else if (s >= this.len) i = p.length - 2;
-    else { let lo = 0, hi = c.length - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (c[m] <= s) lo = m; else hi = m; } i = lo; }
-    const a = p[i], b = p[i + 1], L = (c[i + 1] - c[i]) || 1e-6, t = (s - c[i]) / L;
-    return { x: a[0] + (b[0] - a[0]) * t, z: a[1] + (b[1] - a[1]) * t, dx: (b[0] - a[0]) / L, dz: (b[1] - a[1]) / L };
-  }
-  closestS(x, z, s0 = 0, s1 = Infinity) {
-    let best = { s: 0, d: Infinity };
-    for (let i = 0; i < this.p.length; i++) { const s = this.cum[i]; if (s < s0 || s > s1) continue; const d = Math.hypot(this.p[i][0] - x, this.p[i][1] - z); if (d < best.d) best = { s, d }; }
-    return best;
-  }
-}
-
-const pathCache = {};
-function interPath(a, b) {
-  const key = 'i' + a + b; if (pathCache[key]) return pathCache[key];
-  const P = new Path(), t = turnOf(a, b);
-  const f = lanePt(a, true, FAR), e = lanePt(a, true, STOP_R), x = lanePt(b, false, STOP_R), xf = lanePt(b, false, FAR);
-  P.line(f, e).mark('in');
-  if (t === 2) P.line(e, x);
-  else {
-    const c0 = lineIntersect(e, [-OUT[a][0], -OUT[a][1]], x, OUT[b]);
-    P.quad(e, t === 3 ? [c0[0] * 0.5, c0[1] * 0.5] : c0, x); // left turns cut inside the centre (art. 154)
-  }
-  P.mark('out').line(x, xf).done();
-  Object.assign(P, { kind: 'inter', a, b, turn: t });
-  P.s.stop = P.s.in - CAR_L / 2 - 0.4;
-  P.vlim = s => (t !== 2 && s > P.s.in - 8 && s < P.s.out + 2) ? 6 : 10;
-  return pathCache[key] = P;
-}
-
-function rbPath(a, b) {
-  const key = 'r' + a + b; if (pathCache[key]) return pathCache[key];
-  const P = new Path();
-  const te = ARM_ANG[a] - RB.d; let tx = ARM_ANG[b] + RB.d; while (tx >= te - 0.05) tx -= TAU;
-  const f = lanePt(a, true, FAR), y = lanePt(a, true, RB.yieldR), y2 = lanePt(a, true, RB.yieldR - 2);
-  const m = Cpt(te), T1 = Tan(te);
-  P.line(f, y).mark('yield');
-  P.cubic(y, y2, [m[0] - T1[0] * 3, m[1] - T1[1] * 3], m).mark('merge');
-  P.arc(RB.R, te, tx).mark('exit');
-  const xo = Cpt(tx), T2 = Tan(tx), q = lanePt(b, false, RB.yieldR), q2 = lanePt(b, false, RB.yieldR - 2);
-  P.cubic(xo, [xo[0] + T2[0] * 3, xo[1] + T2[1] * 3], q2, q).mark('out');
-  P.line(q, lanePt(b, false, FAR)).done();
-  Object.assign(P, { kind: 'rb', a, b, turn: turnOf(a, b) });
-  P.s.stop = P.s.yield - CAR_L / 2 - 0.3;
-  // where this path crosses each arm's merge point (the conflict zone of that entry)
-  P.pass = {};
-  for (let k = 0; k < 4; k++) {
-    const mk = Cpt(ARM_ANG[k] - RB.d);
-    const r = P.closestS(mk[0], mk[1], P.s.merge - 0.5, P.s.exit + 0.5);
-    if (r.d < 0.6) P.pass[k] = r.s;
-  }
-  const prev = (b + 3) % 4, px = Cpt(ARM_ANG[prev] + RB.d);
-  const r = P.closestS(px[0], px[1], P.s.merge + 0.5, P.s.exit - 0.5);
-  if (r.d < 0.6) P.s.prevExit = r.s;
-  P.vlim = s => (s > P.s.merge - 6 && s < P.s.out + 1) ? 7.5 : 10;
-  return pathCache[key] = P;
-}
-
-function pathsConflict(P, Q) {
-  const key = 'c' + P.a + P.b + Q.a + Q.b;
-  if (key in pathCache) return pathCache[key];
-  let hit = false;
-  outer: for (let s = P.s.in; s <= P.s.out + 2; s += 0.4) {
-    const p = P.at(s);
-    for (let u = Q.s.in; u <= Q.s.out + 2; u += 0.4) { const q = Q.at(u); if ((p.x - q.x) ** 2 + (p.z - q.z) ** 2 < 2.2 * 2.2) { hit = true; break outer; } }
-  }
-  return pathCache[key] = hit;
-}
-
-// blinker logic
-function interBlink(c) { const P = c.path; if (c.s > P.s.out + 4) return null; return P.turn === 1 ? 'R' : P.turn === 3 ? 'L' : null; }
-function rbBlink(c) {
-  const P = c.path, s = c.s;
-  if (s > P.s.out + 6) return null;
-  if (s >= P.s.exit || P.turn === 1) return 'R';
-  if (P.s.prevExit !== undefined && s >= P.s.prevExit) return 'R';
-  return P.turn === 2 ? null : 'L';
-}
-
-// =================================================================== rules
-const RANK = { none: 1, priority: 1, yield: 0, stop: 0 };
-const SIGN_NAME = { yield: '“Dare precedenza”', stop: 'STOP', priority: 'priority-road', none: 'no' };
-// returns reason code if A must give way to B (assumes their paths conflict)
-function mustYield(A, B, signs) {
-  const ra = RANK[signs[A.arm]], rb = RANK[signs[B.arm]];
-  if (ra < rb) return 'sign';
-  if (ra > rb) return null;
-  const rel = (B.arm - A.arm + 4) % 4;
-  if (rel === 1) return 'right';
-  if (rel === 2 && A.turn === 3 && B.turn !== 3) return 'left';
-  return null;
-}
-const nm = c => c.isPlayer ? 'you' : c.name;
-const poss = c => c.isPlayer ? 'your' : c.name + '’s';
-function reasonText(A, B, code, signs) {
-  if (code === 'sign') return `${nm(A)} ${A.isPlayer ? 'have' : 'has'} a <b>${SIGN_NAME[signs[A.arm]]}</b> sign, and ${nm(B)} ${B.isPlayer ? 'are' : 'is'} on the main road`;
-  if (code === 'right') return `${nm(B)} ${B.isPlayer ? 'come' : 'comes'} from ${poss(A)} <b>right</b>: <i>precedenza a destra</i>`;
-  if (code === 'left') return `${nm(A)} ${A.isPlayer ? 'turn' : 'turns'} <b>left</b>, so ${nm(A)} must let the <b>oncoming</b> ${nm(B)} go first`;
-  return '';
-}
-const TURN_TXT = { 1: 'turning right', 2: 'going straight', 3: 'turning left', 0: 'making a U-turn' };
-
-// =================================================================== three.js setup
-const stage = $('#stage');
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
-stage.prepend(renderer.domElement);
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xa9cbe6);
-scene.fog = new THREE.Fog(0xa9cbe6, 90, 220);
-scene.add(new THREE.HemisphereLight(0xffffff, 0x556644, 1.6));
-const sun = new THREE.DirectionalLight(0xffffff, 1.7); sun.position.set(30, 60, 25); scene.add(sun);
-
-const topCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 200);
-topCam.up.set(0, 0, -1);
-const persCam = new THREE.PerspectiveCamera(62, 1, 0.1, 400);
-const view = { mode: 'top', userYaw: 0, autoYaw: 0, zoom: 22, cz: 2, yawS: 0 };
-
-// big outer grass
-{ const m = new THREE.Mesh(new THREE.PlaneGeometry(800, 800), new THREE.MeshLambertMaterial({ color: 0x6d9752 })); m.rotation.x = -Math.PI / 2; m.position.y = -0.05; scene.add(m); }
-
-// ground canvas texture (roads + markings drawn in 2D, metres)
-const GPX = 2048, WORLD = 120, PXM = GPX / WORLD;
-const gCanvas = document.createElement('canvas'); gCanvas.width = gCanvas.height = GPX;
-const g = gCanvas.getContext('2d');
-const gTex = new THREE.CanvasTexture(gCanvas); gTex.colorSpace = THREE.SRGBColorSpace; gTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(WORLD, WORLD), new THREE.MeshLambertMaterial({ map: gTex }));
-ground.rotation.x = -Math.PI / 2; scene.add(ground);
-const SIDEWALK = '#bdb9b0', ASPHALT = '#46484c', PAINT = '#f1f1ee';
-
-function beginGround() {
-  g.setTransform(1, 0, 0, 1, 0, 0);
-  g.fillStyle = '#6d9752'; g.fillRect(0, 0, GPX, GPX);
-  for (let i = 0; i < 2500; i++) { g.fillStyle = Math.random() < .5 ? 'rgba(40,70,30,.18)' : 'rgba(150,190,110,.15)'; g.fillRect(Math.random() * GPX, Math.random() * GPX, 6, 6); }
-  g.setTransform(PXM, 0, 0, PXM, GPX / 2, GPX / 2);
-}
-const withArm = (a, fn) => { g.save(); g.rotate(ARM_ROT[a]); fn(); g.restore(); };
-function yieldMarks(y) {
-  g.fillStyle = PAINT;
-  for (let x = 0.2; x < HW - 0.3; x += 0.85) g.fillRect(x, y, 0.5, 0.5);
-  g.strokeStyle = PAINT; g.lineWidth = 0.25;
-  g.beginPath(); g.moveTo(0.85, y + 2.2); g.lineTo(2.65, y + 2.2); g.lineTo(1.75, y + 5.2); g.closePath(); g.stroke();
-}
-function stopMarks(y) {
-  g.fillStyle = PAINT; g.fillRect(0.08, y, HW - 0.16, 0.5);
-  g.save(); g.translate(1.75, y + 3.6); g.scale(1, 2.2); g.font = 'bold 1.05px Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('STOP', 0, 0); g.restore();
-}
-function drawIntersection(L) {
-  beginGround();
-  g.fillStyle = SIDEWALK; g.fillRect(-5.7, -5.7, 11.4, 11.4);
-  for (let a = 0; a < 4; a++) if (L.arms[a]) withArm(a, () => g.fillRect(-5.7, 0, 11.4, 62));
-  g.fillStyle = ASPHALT; g.fillRect(-HW, -HW, 2 * HW, 2 * HW);
-  for (let a = 0; a < 4; a++) if (L.arms[a]) withArm(a, () => g.fillRect(-HW, 0, 2 * HW, 62));
-  for (let a = 0; a < 4; a++) if (L.arms[a]) withArm(a, () => {
-    g.fillStyle = PAINT;
-    g.fillRect(-HW + 0.15, STOP_R, 0.12, 60); g.fillRect(HW - 0.27, STOP_R, 0.12, 60);
-    g.fillRect(-0.06, STOP_R, 0.12, 12);
-    for (let y = STOP_R + 15; y < 60; y += 7.5) g.fillRect(-0.06, y, 0.12, 4.5);
-    if (L.signs[a] === 'stop') stopMarks(STOP_R);
-    else if (L.signs[a] === 'yield') yieldMarks(STOP_R);
-  });
-  gTex.needsUpdate = true;
-}
-function circle(r, col) { g.fillStyle = col; g.beginPath(); g.arc(0, 0, r, 0, TAU); g.fill(); }
-function drawRoundabout() {
-  beginGround();
-  circle(RB.outer + 2.2, SIDEWALK);
-  for (let a = 0; a < 4; a++) withArm(a, () => { g.fillStyle = SIDEWALK; g.fillRect(-5.7, 0, 11.4, 62); });
-  circle(RB.outer, ASPHALT);
-  for (let a = 0; a < 4; a++) withArm(a, () => {
-    g.fillStyle = ASPHALT; g.fillRect(-HW, RB.outer - 2, 2 * HW, 62);
-    g.beginPath(); g.moveTo(-HW - 2.4, RB.outer - 1.2); g.lineTo(HW + 2.4, RB.outer - 1.2); g.lineTo(HW, RB.outer + 4.5); g.lineTo(-HW, RB.outer + 4.5); g.closePath(); g.fill();
-  });
-  circle(RB.island + 1.1, '#c9c2b4');
-  circle(RB.island + 0.15, '#ededea');
-  circle(RB.island - 0.1, '#5e8f45');
-  for (let i = 0; i < 9; i++) { const t = i / 9 * TAU; g.fillStyle = '#3f6e30'; g.beginPath(); g.arc(Math.cos(t) * 5.5, Math.sin(t) * 5.5, 1.3, 0, TAU); g.fill(); }
-  g.fillStyle = '#4b7d38'; g.beginPath(); g.arc(0, 0, 2.6, 0, TAU); g.fill();
-  for (let a = 0; a < 4; a++) withArm(a, () => {
-    g.fillStyle = '#ededea';
-    g.beginPath(); g.moveTo(0, RB.outer + 0.6); g.lineTo(0.62, 18.2); g.lineTo(0.62, 26); g.lineTo(0, 28.5); g.lineTo(-0.62, 26); g.lineTo(-0.62, 18.2); g.closePath(); g.fill();
-    g.fillStyle = SIDEWALK;
-    g.beginPath(); g.moveTo(0, RB.outer + 1.4); g.lineTo(0.45, 18.4); g.lineTo(0.45, 25.8); g.lineTo(0, 27.6); g.lineTo(-0.45, 25.8); g.lineTo(-0.45, 18.4); g.closePath(); g.fill();
-    g.fillStyle = PAINT;
-    g.fillRect(-HW + 0.15, 21, 0.12, 40); g.fillRect(HW - 0.27, 21, 0.12, 40);
-    for (let y = 31; y < 60; y += 7.5) g.fillRect(-0.06, y, 0.12, 4.5);
-    yieldMarks(RB.yieldR);
-  });
-  gTex.needsUpdate = true;
-}
-
-// sign textures
-function canvasTex(w, h, draw) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; }
-function triPath(x, w, h, up) { x.beginPath(); if (up) { x.moveTo(w / 2, 8); x.lineTo(w - 6, h - 14); x.lineTo(6, h - 14); } else { x.moveTo(6, 14); x.lineTo(w - 6, 14); x.lineTo(w / 2, h - 8); } x.closePath(); }
-const SIGN_TEX = {
-  yield: canvasTex(128, 128, (x, w, h) => { triPath(x, w, h, false); x.fillStyle = '#d0021b'; x.fill(); x.lineJoin = 'round'; x.lineWidth = 6; x.strokeStyle = '#fff'; x.stroke(); x.save(); x.translate(w / 2, h / 2 - 6); x.scale(.62, .62); x.translate(-w / 2, -h / 2); triPath(x, w, h, false); x.fillStyle = '#fff'; x.fill(); x.restore(); }),
-  priority: canvasTex(128, 128, (x, w, h) => { triPath(x, w, h, true); x.fillStyle = '#d0021b'; x.fill(); x.lineJoin = 'round'; x.lineWidth = 6; x.strokeStyle = '#fff'; x.stroke(); x.save(); x.translate(w / 2, h / 2 + 8); x.scale(.62, .62); x.translate(-w / 2, -h / 2); triPath(x, w, h, true); x.fillStyle = '#fff'; x.fill(); x.restore(); x.fillStyle = '#111'; x.fillRect(w / 2 - 6, 48, 12, 52); x.fillRect(w / 2 - 22, 66, 44, 7); }),
-  stop: canvasTex(128, 128, (x, w, h) => { x.beginPath(); for (let i = 0; i < 8; i++) { const t = (i + .5) / 8 * TAU; x.lineTo(w / 2 + Math.cos(t) * 60, h / 2 + Math.sin(t) * 60); } x.closePath(); x.fillStyle = '#d0021b'; x.fill(); x.lineWidth = 5; x.strokeStyle = '#fff'; x.stroke(); x.fillStyle = '#fff'; x.font = 'bold 36px Arial'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('STOP', w / 2, h / 2 + 2); }),
-  round: canvasTex(128, 128, (x, w, h) => { x.beginPath(); x.arc(64, 64, 60, 0, TAU); x.fillStyle = '#1f5fbf'; x.fill(); x.lineWidth = 4; x.strokeStyle = '#fff'; x.stroke(); x.lineWidth = 11; for (let i = 0; i < 3; i++) { const a0 = i / 3 * TAU - 0.3; x.beginPath(); x.arc(64, 64, 30, a0, a0 + 1.35); x.stroke(); const a1 = a0 + 1.55; x.beginPath(); x.moveTo(64 + Math.cos(a1) * 30, 64 + Math.sin(a1) * 30); x.lineTo(64 + Math.cos(a1 - .45) * 44, 64 + Math.sin(a1 - .45) * 44); x.lineTo(64 + Math.cos(a1 - .45) * 16, 64 + Math.sin(a1 - .45) * 16); x.closePath(); x.fillStyle = '#fff'; x.fill(); } }),
-};
-const poleGeo = new THREE.CylinderGeometry(0.05, 0.05, 2.6, 6), poleMat = new THREE.MeshLambertMaterial({ color: 0x888888 });
-function addSign(root, a, dist, kinds) {
-  const [ox, oz] = OUT[a], rx = oz, rz = -ox; // right side of the inbound lane
-  const x = ox * dist + rx * (HW + 1.3), z = oz * dist + rz * (HW + 1.3);
-  const pole = new THREE.Mesh(poleGeo, poleMat); pole.position.set(x, 1.3, z); root.add(pole);
-  kinds.forEach((k, i) => { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: SIGN_TEX[k] })); sp.scale.set(2.1, 2.1, 1); sp.position.set(x, 2.9 - i * 1.9, z); root.add(sp); });
-}
-
-// cars
-const GEO = {
-  body: new THREE.BoxGeometry(CAR_L, 0.72, CAR_W), cabin: new THREE.BoxGeometry(2.3, 0.6, 1.62), roof: new THREE.BoxGeometry(1.9, 0.08, 1.56),
-  wheel: new THREE.CylinderGeometry(0.34, 0.34, 0.24, 14), lamp: new THREE.BoxGeometry(0.12, 0.2, 0.42), ind: new THREE.BoxGeometry(0.22, 0.2, 0.3),
-  mirror: new THREE.BoxGeometry(0.2, 0.14, 0.18), shadow: new THREE.PlaneGeometry(4.8, 2.4), ring: new THREE.RingGeometry(2.9, 3.4, 48),
-};
-const MAT = {
-  glass: new THREE.MeshLambertMaterial({ color: 0x22303d }), wheel: new THREE.MeshLambertMaterial({ color: 0x151515 }),
-  head: new THREE.MeshBasicMaterial({ color: 0xfffbe0 }), tailOff: new THREE.MeshLambertMaterial({ color: 0x6a1010 }), tailOn: new THREE.MeshBasicMaterial({ color: 0xff2a2a }),
-  indOff: new THREE.MeshLambertMaterial({ color: 0x8a5a14 }), indOn: new THREE.MeshBasicMaterial({ color: 0xffa500 }),
-  shadow: new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: .28, depthWrite: false }),
-};
-const haloTex = canvasTex(64, 64, (x) => { const gr = x.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, 'rgba(255,220,120,1)'); gr.addColorStop(.35, 'rgba(255,160,0,.8)'); gr.addColorStop(1, 'rgba(255,140,0,0)'); x.fillStyle = gr; x.fillRect(0, 0, 64, 64); });
-const haloMat = new THREE.SpriteMaterial({ map: haloTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true });
-const PALETTE = [0xdedede, 0x3a3a3a, 0xb3261e, 0x2f6d3a, 0x7a5c3e, 0x8e9aa6, 0xe8e1d0, 0x5b4b8a, 0x0f6b6b, 0x9a2f6b];
-const PLAYER_COLOR = 0x1e6ef0;
-
-function makeCar(color) {
-  const grp = new THREE.Group();
-  const paint = new THREE.MeshLambertMaterial({ color });
-  const add = (geo, mat, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); grp.add(m); return m; };
-  add(GEO.body, paint, 0, 0.66, 0);
-  add(GEO.cabin, MAT.glass, -0.35, 1.32, 0);
-  add(GEO.roof, paint, -0.45, 1.66, 0);
-  for (const [x, z] of [[1.35, .8], [1.35, -.8], [-1.35, .8], [-1.35, -.8]]) { const w = add(GEO.wheel, MAT.wheel, x, 0.34, z); w.rotation.x = Math.PI / 2; }
-  add(GEO.lamp, MAT.head, 2.1, 0.75, 0.52); add(GEO.lamp, MAT.head, 2.1, 0.75, -0.52);
-  const tails = [add(GEO.lamp, MAT.tailOff, -2.1, 0.78, 0.55), add(GEO.lamp, MAT.tailOff, -2.1, 0.78, -0.55)];
-  const parts = { L: [], R: [], hL: [], hR: [], tails, paint };
-  for (const side of [-1, 1]) {
-    const key = side < 0 ? 'L' : 'R';
-    parts[key].push(add(GEO.ind, MAT.indOff, 2.04, 0.66, side * 0.8), add(GEO.ind, MAT.indOff, -2.04, 0.66, side * 0.8), add(GEO.mirror, MAT.indOff, 0.85, 1.05, side * 1.0));
-    for (const x of [2.25, -2.25]) { const h = new THREE.Sprite(haloMat); h.scale.set(1.5, 1.5, 1); h.position.set(x, 1.0, side * 1.0); h.visible = false; grp.add(h); parts['h' + key].push(h); }
-  }
-  const sh = add(GEO.shadow, MAT.shadow, 0, 0.03, 0); sh.rotation.x = -Math.PI / 2;
-  grp.userData.parts = parts;
-  return grp;
-}
-function labelSprite(text, bg = '#111', fg = '#fff', w = 1.9) {
-  const wide = text.length > 3;
-  const tex = canvasTex(wide ? 256 : 128, 128, (x, W, H) => {
-    x.fillStyle = bg; x.beginPath(); x.roundRect(4, 14, W - 8, H - 28, 46); x.fill();
-    x.lineWidth = 5; x.strokeStyle = 'rgba(255,255,255,.9)'; x.stroke();
-    x.fillStyle = fg; x.font = `bold ${text.length > 2 ? 44 : 64}px Arial`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(text, W / 2, H / 2 + 3);
-  });
-  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true }));
-  sp.scale.set(wide ? w * 2 : w, w, 1); sp.renderOrder = 10; return sp;
-}
-
-// =================================================================== world / simulation
-const world = { root: null, cars: [], player: null, paused: false, layout: null };
-let T = 0;
-function resetWorld() {
-  if (world.root) {
-    scene.remove(world.root);
-    world.root.traverse(o => { if (o.isSprite && o.material !== haloMat && !Object.values(SIGN_TEX).includes(o.material.map)) { o.material.map?.dispose(); o.material.dispose(); } });
-  }
-  world.root = new THREE.Group(); scene.add(world.root);
-  world.cars = []; world.player = null; world.paused = false;
-}
-function addCar(path, opts = {}) {
-  const c = { path, s: 0, v: 0, stopAt: null, isPlayer: !!opts.player, name: opts.name || 'the car', committed: false, gone: false,
-    phase: Math.random() * 0.6, blinkFn: path.kind === 'rb' ? rbBlink : interBlink, manualBlink: undefined, acc: opts.acc || 2.6 };
-  c.arm = path.a; c.turn = path.turn;
-  c.mesh = makeCar(opts.player ? PLAYER_COLOR : (opts.color ?? pick(PALETTE)));
-  c.mesh.userData.car = c;
-  world.root.add(c.mesh); world.cars.push(c);
-  if (c.isPlayer) { world.player = c; setLabel(c, 'YOU', '#1e6ef0'); }
-  sync(c);
-  return c;
-}
-function setLabel(c, text, bg = '#111', fg = '#fff') {
-  if (c.label) { c.mesh.remove(c.label); c.label.material.map.dispose(); c.label.material.dispose(); c.label = null; }
-  if (!text) return;
-  c.label = labelSprite(text, bg, fg); c.label.position.set(-0.4, 3.3, 0); c.mesh.add(c.label);
-}
-function setRing(c, color) {
-  if (!color) { if (c.ring) c.ring.visible = false; return; }
-  if (!c.ring) { c.ring = new THREE.Mesh(GEO.ring, new THREE.MeshBasicMaterial({ color, transparent: true, opacity: .9, depthWrite: false })); c.ring.rotation.x = -Math.PI / 2; c.ring.position.y = 0.06; c.mesh.add(c.ring); }
-  c.ring.material.color.set(color); c.ring.visible = true;
-}
-function sideTag(c, side) {
-  const sp = labelSprite(side === 'L' ? 'its LEFT' : 'its RIGHT', '#ffa500', '#111', 2.2);
-  sp.position.set(0.5, 1.4, side === 'L' ? -3.4 : 3.4); c.mesh.add(sp); c.sideTag = sp;
-}
-function sync(c) {
-  const p = c.path.at(c.s), a = c.path.at(c.s - 0.9), b = c.path.at(c.s + 0.9);
-  let dx = b.x - a.x, dz = b.z - a.z; const L = Math.hypot(dx, dz) || 1; dx /= L; dz /= L;
-  c.x = p.x; c.z = p.z; c.dx = dx; c.dz = dz;
-  c.mesh.position.set(p.x, 0, p.z); c.mesh.rotation.y = Math.atan2(-dz, dx);
-}
-function gapAhead(c) {
-  const look = 5 + c.v * 2.2; let best = Infinity, who = null;
-  for (const o of world.cars) {
-    if (o === c || o.gone) continue;
-    const dx = o.x - c.x, dz = o.z - c.z;
-    if (dx * dx + dz * dz > (look + 6) ** 2) continue;
-    if (dx * c.dx + dz * c.dz < 0.5) continue;
-    for (let k = 1.5; k <= look; k += 1) { const p = c.path.at(c.s + k); if ((o.x - p.x) ** 2 + (o.z - p.z) ** 2 < 2.1 * 2.1) { if (k < best) { best = k; who = o; } break; } }
-  }
-  return { d: best, who };
-}
-function stepCars(dt) {
-  for (const c of world.cars) {
-    if (c.gone) continue;
-    let vt = c.path.vlim(c.s);
-    if (c.stopAt != null) { const d = c.stopAt - c.s; vt = Math.min(vt, d <= 0.05 ? 0 : Math.sqrt(2 * 3.2 * d)); }
-    const g = gapAhead(c); c.blocker = g.who;
-    if (g.d < Infinity) { const free = g.d - 4.6; vt = Math.min(vt, free <= 0 ? 0 : Math.sqrt(2 * 4.5 * free)); }
-    if (c.v < vt) { c.v = Math.min(vt, c.v + c.acc * dt); c.braking = false; }
-    else { const nv = Math.max(vt, c.v - 9 * dt); c.braking = (c.v - nv) / dt > 1.0; c.v = nv; }
-    if (c.v < 0.2) c.braking = true;
-    c.s += c.v * dt;
-    if (c.stopAt != null && c.s > c.stopAt && c.s - c.v * dt <= c.stopAt) c.s = c.stopAt;
-    sync(c);
-    if (c.s > c.path.len - 1) c.gone = true;
-  }
-  for (const c of world.cars) if (c.gone && c.mesh.parent) { world.root.remove(c.mesh); c.mesh.userData.parts.paint.dispose(); }
-  world.cars = world.cars.filter(c => !c.gone);
-  if (world.player?.gone) world.player = null;
-}
-function updateLights() {
-  for (const c of world.cars) {
-    const P = c.mesh.userData.parts;
-    const b = c.manualBlink !== undefined ? c.manualBlink : c.blinkFn(c);
-    c.blink = b;
-    const on = ((T + c.phase) % 0.7) < 0.38;
-    for (const side of ['L', 'R']) {
-      const lit = b === side && on;
-      for (const m of P[side]) m.material = lit ? MAT.indOn : MAT.indOff;
-      for (const h of P['h' + side]) h.visible = lit;
-    }
-    for (const t of P.tails) t.material = c.braking ? MAT.tailOn : MAT.tailOff;
-    if (c.ring?.visible) { const k = 1 + 0.07 * Math.sin(T * 7); c.ring.scale.set(k, k, k); }
-  }
-}
-
-// =================================================================== layouts
-function randomLayout() {
-  const T_ = Math.random() < 0.4; const arms = [true, true, true, true]; let missing = -1;
-  if (T_) { missing = pick([E_, N_, W_]); arms[missing] = false; }
-  const signs = ['none', 'none', 'none', 'none'];
-  if (Math.random() < 0.55) {
-    const mainNS = T_ ? missing !== N_ : Math.random() < 0.5;
-    const minor = pick(['yield', 'stop']);
-    for (let a = 0; a < 4; a++) {
-      if (!arms[a]) continue;
-      const onMain = mainNS ? (a === S_ || a === N_) : (a === E_ || a === W_);
-      signs[a] = onMain ? 'priority' : (Math.random() < 0.75 ? minor : pick(['yield', 'stop']));
-    }
-  }
-  return { arms, signs, missing, signed: signs.some(s => s !== 'none') };
-}
-function buildInterScene(L) {
-  drawIntersection(L);
-  for (let a = 0; a < 4; a++) if (L.arms[a] && L.signs[a] !== 'none') addSign(world.root, a, STOP_R + 0.8, [L.signs[a]]);
-}
-function buildRBScene() { drawRoundabout(); for (let a = 0; a < 4; a++) addSign(world.root, a, RB.yieldR + 0.6, ['yield', 'round']); }
-
-// =================================================================== UI helpers
-const promptEl = $('#prompt'), answersEl = $('#answers'), fbEl = $('#feedback'), statsEl = $('#stats'), flashEl = $('#flash'), timerEl = $('#timer');
-const setPrompt = (html, sub = '') => promptEl.innerHTML = html + (sub ? `<div class="sub">${sub}</div>` : '');
-const setFeedback = html => fbEl.innerHTML = html;
-let flashT = 0;
-function flash(text, cls = 'ok', ms = 1100) { flashEl.textContent = text; flashEl.className = cls + ' show'; clearTimeout(flashT); flashT = setTimeout(() => flashEl.className = cls, ms); }
-function setAnswers(list) {
-  answersEl.innerHTML = '';
-  for (const o of list) {
-    const b = document.createElement('button');
-    b.innerHTML = o.html + (o.key ? `<kbd>${o.key}</kbd>` : '');
-    if (o.cls) b.className = o.cls;
-    if (o.disabled) b.disabled = true;
-    b.onclick = e => { e.stopPropagation(); o.fn(); };
-    o.el = b; answersEl.appendChild(b);
-  }
-  return list;
-}
-let stats;
-try { stats = JSON.parse(localStorage.getItem('precedenza-stats')); } catch (e) {}
-stats = Object.assign({ m1: { n: 0, ok: 0, t: 0 }, m2: { n: 0, perfect: 0, streak: 0, best: 0 }, m3: { n: 0, good: 0, tight: 0, bad: 0, missed: 0 } }, stats || {});
-function saveStats() { try { localStorage.setItem('precedenza-stats', JSON.stringify(stats)); } catch (e) {} showStats(); }
-function showStats() {
-  const m = current?.id;
-  if (m === 'm1') statsEl.textContent = `Score ${stats.m1.ok}/${stats.m1.n}` + (stats.m1.ok ? ` · avg correct answer ${(stats.m1.t / stats.m1.ok).toFixed(1)} s` : '');
-  else if (m === 'm2') statsEl.textContent = `Perfect rounds ${stats.m2.perfect}/${stats.m2.n} · streak ${stats.m2.streak} (best ${stats.m2.best})`;
-  else if (m === 'm3') statsEl.textContent = `Entries: ${stats.m3.good} safe · ${stats.m3.tight} tight · ${stats.m3.bad} unsafe · ${stats.m3.missed} safe gaps missed`;
-  else statsEl.textContent = '';
-}
-
-// =================================================================== MODE 1: read the signal
-const REL_EXIT = { 0: 'into <b>your road</b>, coming toward you', 1: 'into the road on <b>your right</b>', 2: 'into the road <b>straight ahead</b> of you', 3: 'into the road on <b>your left</b>' };
-const FROM = { 1: 'from your <b>right</b>', 2: '<b>toward you</b> (oncoming)', 3: 'from your <b>left</b>' };
-const M1 = {
-  id: 'm1',
-  start() { this.next(); },
-  next() {
-    resetWorld(); timerEl.style.width = '0';
-    this.state = 'approach';
-    if (Math.random() < 0.35) this.setupRB(); else this.setupInter();
-    setAnswers([]);
-    setPrompt(`Watch the car marked <b>?</b> and read its blinker.`, this.kind === 'rb' ? 'You are waiting at the roundabout entry.' : 'You (blue) are stopped at the junction.');
-    view.autoYaw = this.kind === 'rb' ? 0.6 : 0;
-  },
-  setupInter() {
-    const L = randomLayout(); world.layout = L; buildInterScene(L); this.kind = 'inter'; view.zoom = 18; view.cz = 2;
-    const pb = pick([1, 2, 3].filter(b => L.arms[b]));
-    const me = addCar(interPath(S_, pb), { player: true }); me.s = me.stopAt = me.path.s.stop; sync(me);
-    const arms = [1, 2, 3].filter(a => L.arms[a]); const a = pick(arms);
-    const b = pick([0, 1, 2, 3].filter(x => x !== a && L.arms[x]));
-    const t = addCar(interPath(a, b), { name: 'the ? car' }); t.s = t.path.s.stop - 32; t.v = 9; t.stopAt = t.path.s.stop; sync(t);
-    setRing(t, '#ffd400'); setLabel(t, '?', '#ffd400', '#111'); this.target = t;
-    const rest = arms.filter(x => x !== a);
-    if (rest.length && Math.random() < 0.5) { const da = pick(rest); const d = addCar(interPath(da, pick([0, 1, 2, 3].filter(x => x !== da && L.arms[x])))); d.s = d.stopAt = d.path.s.stop; sync(d); }
-  },
-  setupRB() {
-    buildRBScene(); world.layout = { rb: true }; this.kind = 'rb'; view.zoom = 24; view.cz = 1;
-    const me = addCar(rbPath(S_, pick([1, 2, 3])), { player: true }); me.s = me.stopAt = me.path.s.stop; sync(me);
-    const a = pick([N_, W_]);
-    const b = Math.random() < 0.5 ? S_ : (a === N_ ? E_ : pick([E_, N_]));
-    const t = addCar(rbPath(a, b), { name: 'the ? car' }); t.s = t.path.s.yield - 14; t.v = 8; t.committed = true; sync(t);
-    const fp = Cpt(2.25); this.freezeS = t.path.closestS(fp[0], fp[1], t.path.s.merge - 1).s;
-    setRing(t, '#ffd400'); setLabel(t, '?', '#ffd400', '#111'); this.target = t;
-  },
-  update(dt) {
-    if (!world.paused) stepCars(dt);
-    const t = this.target;
-    if (this.state === 'approach') {
-      if (this.kind === 'inter' && t.s >= t.stopAt - 0.2 && t.v < 0.3) this.ask();
-      if (this.kind === 'rb' && t.s >= this.freezeS) { world.paused = true; this.ask(); }
-    }
-    if (this.state === 'ask') { const el = (performance.now() - this.askAt) / 1000; timerEl.style.width = clamp(el / 6, 0, 1) * 100 + '%'; timerEl.style.background = el < 2 ? '#4ade80' : el < 4 ? '#ffd54a' : '#f87171'; }
-  },
-  ask() {
-    this.state = 'ask'; this.askAt = performance.now();
-    if (this.kind === 'inter') {
-      const L = world.layout, a = this.target.arm;
-      const opts = [[3, '⬅ road on my LEFT', '←'], [2, '⬆ straight ahead (away)', '↑'], [1, '➡ road on my RIGHT', '→'], [0, '⬇ into MY road', '↓']]
-        .filter(([b]) => b !== a && L.arms[b]);
-      setPrompt(`Where is the <b>?</b> car going?`, 'Answer from YOUR point of view (arrow keys work).');
-      this.opts = setAnswers(opts.map(([b, txt, key]) => ({ html: txt, key, val: b, fn: () => this.answer(b) })));
-    } else {
-      setPrompt(`⏸ Paused. You want to enter. What will the <b>?</b> car do?`, 'It is coming from your left, inside the roundabout.');
-      this.opts = setAnswers([
-        { html: 'It EXITS into my road → I can go', key: '1', val: 'exit', fn: () => this.answer('exit') },
-        { html: 'It PASSES in front of me → I wait', key: '2', val: 'pass', fn: () => this.answer('pass') },
-      ]);
-    }
-  },
-  key(k) {
-    if (this.state === 'ask') {
-      const map = { ArrowLeft: 3, ArrowUp: 2, ArrowRight: 1, ArrowDown: 0, '1': 'exit', '2': 'pass' };
-      if (k in map && this.opts.some(o => o.val === map[k])) this.answer(map[k]);
-    } else if (this.state === 'reveal' && (k === ' ' || k === 'Enter')) this.next();
-  },
-  answer(v) {
-    if (this.state !== 'ask') return;
-    const t = this.target, secs = (performance.now() - this.askAt) / 1000;
-    this.state = 'reveal'; world.paused = false; t.stopAt = null; t.committed = true;
-    const correct = this.kind === 'inter' ? t.path.b : (t.path.b === S_ ? 'exit' : 'pass');
-    const ok = v === correct;
-    stats.m1.n++; if (ok) { stats.m1.ok++; stats.m1.t += secs; } saveStats();
-    for (const o of this.opts) { o.el.disabled = true; if (o.val === correct) { o.el.disabled = false; o.el.classList.add('on'); } }
-    flash(ok ? (secs < 2 ? `✓ ${secs.toFixed(1)} s, sharp!` : `✓ ${secs.toFixed(1)} s`) : '✗ Not quite', ok ? 'ok' : 'bad');
-    if (t.blink) sideTag(t, t.blink);
-    setFeedback(this.kind === 'inter' ? this.explainInter(ok) : this.explainRB(ok));
-    setAnswers([{ html: 'Next ▸', key: 'space', fn: () => this.next(), cls: 'on' }]);
-    setPrompt(ok ? '✓ Correct, watch it go.' : '✗ Watch where it actually goes.');
-  },
-  explainInter(ok) {
-    const t = this.target, me = world.player, L = world.layout, a = t.arm, b = t.path.b, turn = t.path.turn;
-    const blinkTxt = turn === 1 ? 'its <b>RIGHT</b> blinker on' : turn === 3 ? 'its <b>LEFT</b> blinker on' : '<b>no blinker</b>';
-    let look = '';
-    if (a === N_ && turn !== 2) look = `It faces you, so the picture is <b>mirrored</b>: its ${turn === 3 ? 'left' : 'right'} blinker flashes on <b>your ${turn === 3 ? 'right' : 'left'}</b> side.`;
-    if (a === E_) look = `It comes from your right, so you see its <b>left</b> side${turn === 1 ? '. Its right blinker shows mostly at its <b>front corner</b>' : ''}.`;
-    if (a === W_) look = `It comes from your left, so you see its <b>right</b> side${turn === 3 ? '. Its left blinker shows mostly at its <b>front corner</b>' : ''}.`;
-    const turnTxt = turn === 2 ? 'goes <b>straight</b>' : `turns to <b>its ${turn === 1 ? 'right' : 'left'}</b>`;
-    let you = '';
-    const A = { ...me, isPlayer: true, arm: S_, turn: me.path.turn }, B = { ...t, isPlayer: false, name: 'the ? car', arm: a, turn };
-    if (pathsConflict(me.path, t.path)) {
-      const r1 = mustYield(A, B, L.signs), r2 = mustYield(B, A, L.signs);
-      you = `You're ${TURN_TXT[me.path.turn]}: <b>your paths cross</b>. ` + (r1 ? `You give way, because ${reasonText(A, B, r1, L.signs)}.` : r2 ? `It gives way to you, because ${reasonText(B, A, r2, L.signs)}.` : '');
-    } else you = `You're ${TURN_TXT[me.path.turn]}: your paths <b>don't cross</b>, so you don't need to wait for it.`;
-    return `<h3 class="${ok ? 'ok' : 'bad'}">${ok ? 'Correct' : 'Not quite'}: it goes ${REL_EXIT[b]}.</h3>
-      <ul><li>It comes ${FROM[a]} with ${blinkTxt}, so it ${turnTxt}, ending up ${REL_EXIT[b]}.</li>
-      ${look ? `<li>${look}</li>` : ''}
-      ${turn === 2 ? '<li class="it">No blinker usually means straight on, but people forget, so check its wheels and its line.</li>' : ''}
-      <li><b>What it means for you:</b> ${you}</li></ul>`;
-  },
-  explainRB(ok) {
-    const t = this.target, b = t.path.b, bl = t.blink;
-    let why;
-    if (b === S_) why = `It's signalling <b>RIGHT</b> and it hasn't reached your road's exit yet, so it leaves the roundabout into <b>your</b> road. It never reaches your entry, so <b>you can go</b>. (In real life, also check that its nose and wheels actually turn outward.)`;
-    else if (bl === 'L') why = `<b>Left</b> blinker = it stays in the roundabout (it's going past halfway). It will <b>pass in front of your entry</b>, so wait.`;
-    else why = `<b>No blinker</b> = it isn't leaving at your road. It will <b>pass in front of your entry</b> (it's heading for a later exit), so wait.`;
-    return `<h3 class="${ok ? 'ok' : 'bad'}">${ok ? 'Correct' : 'Not quite'}: it ${b === S_ ? 'exits into your road' : 'passes in front of you'}.</h3><ul><li>${why}</li><li class="it">Inside the roundabout, cars come from your <b>left</b> and have priority over you (Dare precedenza at the entry).</li></ul>`;
-  },
-};
-
-// =================================================================== MODE 2: who goes first
-const M2 = {
-  id: 'm2',
-  start() { view.zoom = 18; view.cz = 2; view.autoYaw = 0; this.next(); },
-  gen() {
-    for (let tries = 0; tries < 400; tries++) {
-      const L = randomLayout();
-      const others = shuffle([1, 2, 3].filter(a => L.arms[a]));
-      const r = Math.random(); let k = r < 0.25 ? 1 : r < 0.7 ? 2 : 3; k = Math.min(k, others.length);
-      const list = [{ arm: S_, isPlayer: true }, ...others.slice(0, k).map(a => ({ arm: a }))];
-      for (const c of list) { c.exit = pick([0, 1, 2, 3].filter(b => b !== c.arm && L.arms[b])); c.turn = turnOf(c.arm, c.exit); c.path = interPath(c.arm, c.exit); }
-      let letter = 0;
-      for (const a of [W_, N_, E_]) { const c = list.find(x => x.arm === a); if (c) c.name = 'car ' + 'ABC'[letter++]; }
-      const yields = list.map(() => []), together = [];
-      let playerConflict = false;
-      for (let i = 0; i < list.length; i++) for (let j = 0; j < list.length; j++) {
-        if (i === j) continue;
-        if (!pathsConflict(list[i].path, list[j].path)) { if (i < j) together.push([i, j]); continue; }
-        if (i === 0 || j === 0) playerConflict = true;
-        const code = mustYield(list[i], list[j], L.signs);
-        if (code) yields[i].push({ j, code });
-      }
-      // acyclic?
-      const level = new Array(list.length).fill(-1); let changed = true, guard = 0;
-      while (changed && guard++ < 10) { changed = false; for (let i = 0; i < list.length; i++) { if (level[i] >= 0) continue; if (yields[i].every(y => level[y.j] >= 0)) { level[i] = yields[i].length ? 1 + Math.max(...yields[i].map(y => level[y.j])) : 0; changed = true; } } }
-      if (level.some(l => l < 0)) continue;
-      if (!playerConflict && Math.random() < 0.85) continue;
-      return { L, list, yields, level, together };
-    }
-  },
-  next() {
-    resetWorld();
-    const G = this.gen(); this.G = G; world.layout = G.L; buildInterScene(G.L);
-    this.cars = G.list.map(d => { const c = addCar(d.path, { player: d.isPlayer, name: d.name }); c.s = c.stopAt = c.path.s.stop; sync(c); if (!c.isPlayer) setLabel(c, d.name.slice(-1)); return c; });
-    this.clicked = []; this.mistakes = 0; this.state = 'pick'; this.wrongShown = false;
-    setPrompt('Who goes first? Tap the cars <b>in the order they go</b>.', 'Cars whose paths don’t cross can go together, so either order counts.');
-    setFeedback(G.L.signed ? `<span class="it">Signs here: read them first (top view: the icons by each road).</span>` : `<span class="it">No signs at this junction.</span>`);
-    this.renderChips();
-  },
-  renderChips() {
-    const order = [...this.cars].sort((a, b) => ({ 3: 0, 2: 1, 1: 2, 0: 3 })[a.arm] - ({ 3: 0, 2: 1, 1: 2, 0: 3 })[b.arm]);
-    this.chips = setAnswers(order.map(c => ({ html: c.isPlayer ? 'YOU' : c.name.slice(-1), key: c.isPlayer ? 'Y' : c.name.slice(-1), car: c, disabled: this.clicked.includes(c), fn: () => this.pick(c) })));
-  },
-  pick(c) {
-    if (this.state !== 'pick' || this.clicked.includes(c)) return;
-    const i = this.cars.indexOf(c);
-    const blockers = this.G.yields[i].filter(y => !this.clicked.includes(this.cars[y.j]));
-    if (blockers.length) {
-      this.mistakes++;
-      const B = this.cars[blockers[0].j];
-      flash(`✗ ${cap(nm(c))} must wait`, 'bad');
-      setRing(B, '#ff3b30'); setTimeout(() => { if (!this.clicked.includes(B)) setRing(B, null); }, 1600);
-      setFeedback(`<h3 class="bad">${cap(nm(c))} can't go yet.</h3><ul><li>${cap(nm(c))} must wait for <b>${nm(B)}</b>: ${reasonText(this.G.list[i], this.G.list[blockers[0].j], blockers[0].code, this.G.L.signs)}.</li></ul>`);
-      return;
-    }
-    this.clicked.push(c);
-    const n = this.clicked.length;
-    setLabel(c, String(n), '#16a34a'); setRing(c, '#16a34a');
-    if (this.clicked.length === this.cars.length) this.finish(); else { flash('✓', 'ok', 500); this.renderChips(); }
-  },
-  key(k) {
-    if (this.state === 'pick') { const K = k.toUpperCase(); const ch = this.chips.find(o => o.key === K); if (ch) this.pick(ch.car); }
-    else if (k === ' ' || k === 'Enter') this.next();
-  },
-  click(c) { if (this.state === 'pick') this.pick(c); },
-  finish() {
-    this.state = 'play'; this.playT = T;
-    const perfect = this.mistakes === 0;
-    stats.m2.n++; if (perfect) { stats.m2.perfect++; stats.m2.streak++; stats.m2.best = Math.max(stats.m2.best, stats.m2.streak); } else stats.m2.streak = 0; saveStats();
-    flash(perfect ? '✓ Perfect order!' : `Done, ${this.mistakes} mistake${this.mistakes > 1 ? 's' : ''}`, perfect ? 'ok' : 'warn');
-    const G = this.G, L = G.L;
-    // waves
-    const waves = []; G.level.forEach((l, i) => (waves[l] ||= []).push(i));
-    const waveTxt = waves.map((w, k) => `<b>${k + 1}.</b> ${w.map(i => cap(nm(G.list[i]))).join(' + ')}${w.length > 1 ? ' <span class="it">(together, their paths don’t cross)</span>' : ''}`).join(' &nbsp; ');
-    const lines = [];
-    G.list.forEach((c, i) => {
-      const who = `${cap(nm(c))} (${TURN_TXT[c.turn]})`;
-      if (G.yields[i].length) G.yields[i].forEach(y => lines.push(`<li>${who} waits for <b>${nm(G.list[y.j])}</b>: ${reasonText(c, G.list[y.j], y.code, L.signs)}.</li>`));
-      else {
-        const conflicts = G.list.filter((o, j) => j !== i && pathsConflict(c.path, o.path));
-        lines.push(`<li>${who} waits for nobody${conflicts.length ? '' : ': its path crosses no one'}${conflicts.length ? ': every car it crosses must give way to it' : ''}.</li>`);
-      }
-    });
-    if (L.signs[S_] === 'stop') lines.push(`<li><b>Your STOP sign:</b> come to a full stop at the line even if you go first. A rolling stop fails the exam.</li>`);
-    if (!L.signed) lines.unshift(`<li class="it">No signs, so the general rules apply: precedenza a destra, and a left turn gives way to oncoming traffic.</li>`);
-    setFeedback(`<h3 class="${perfect ? 'ok' : 'warn'}">${perfect ? 'Perfect!' : 'Here’s the right order'}</h3><div>${waveTxt}</div><ul>${lines.join('')}</ul>`);
-    setAnswers([{ html: 'Next ▸', key: 'space', cls: 'on', fn: () => this.next() }]);
-    setPrompt('Watch the cars go in the right order…');
-  },
-  update(dt) {
-    if (this.state === 'play' && T - this.playT > 0.6) {
-      this.cars.forEach((c, i) => {
-        if (c.stopAt == null) return;
-        const ready = this.G.yields[i].every(y => { const o = this.cars[y.j]; return o.gone || o.s >= o.path.s.out + 1.5; });
-        if (ready) { c.readyAt ??= T; if (T - c.readyAt > 0.35) c.stopAt = null; }
-      });
-    }
-    stepCars(dt);
-  },
-};
-
-// =================================================================== MODE 3: roundabout live
-const EXIT_NAME = { 1: '1st exit, to the <b>right</b>', 2: '2nd exit, <b>straight on</b>', 3: '3rd exit, to the <b>left</b>' };
-const WANT_BLINK = { 1: 'R', 2: null, 3: 'L' };
-function entryThreat(arm, self) {
-  let worst = null;
-  for (const o of world.cars) {
-    if (o === self || o.gone || !o.committed) continue;
-    const sp = o.path.pass?.[arm]; if (sp === undefined) continue;
-    const d = sp - o.s; if (d < -6.5) continue;
-    const t = d <= 0 ? 0 : d / Math.max(o.v, 4);
-    if (!worst || t < worst.t) worst = { o, t, d };
-  }
-  return worst;
-}
-const isSafe = w => !w || (w.t >= 3.4 && w.d >= 10);
-const M3 = {
-  id: 'm3',
-  start() {
-    view.zoom = 25; view.cz = 1; resetWorld(); buildRBScene(); world.layout = { rb: true };
-    this.spawnT = 0;
-    for (let i = 0; i < 400; i++) { T += 0.05; this.sim(0.05); }
-    this.newPlayer();
-  },
-  spawnGap() { const lvl = +$('#traffic').value; return lvl === 1 ? rand(3.5, 6) : lvl === 2 ? rand(1.8, 3.4) : rand(0.9, 1.8); },
-  sim(dt) {
-    this.spawnT -= dt;
-    if (this.spawnT <= 0) {
-      this.spawnT = this.spawnGap();
-      const a = pick([E_, N_, W_]);
-      const b = Math.random() < 0.05 ? a : pick([0, 1, 2, 3].filter(x => x !== a));
-      const P = rbPath(a, b), s0 = P.s.stop - 40, sp = P.at(s0);
-      if (!world.cars.some(c => Math.hypot(c.x - sp.x, c.z - sp.z) < 12)) { const c = addCar(P); c.s = s0; c.v = 9; sync(c); }
-    }
-    for (const c of world.cars) {
-      if (c.isPlayer || c.committed) continue;
-      if (c.s >= c.path.s.stop - 14) {
-        if (isSafe(entryThreat(c.path.a, c)) && !(c.blocker && !c.blocker.committed)) { c.committed = true; c.stopAt = null; }
-        else c.stopAt = c.path.s.stop;
-      }
-    }
-    stepCars(dt);
-  },
-  newPlayer() {
-    const t = pick([1, 1, 2, 2, 3]); this.exitTurn = t;
-    const P = rbPath(S_, t);
-    const me = addCar(P, { player: true, acc: 3.2 }); me.s = P.s.stop - 28; me.v = 8; me.stopAt = P.s.stop; me.manualBlink = null; sync(me);
-    this.phase = 'approach'; this.safeRun = 0; this.result = {}; this.checkedPrev = false; this.checkedExit = false;
-    if (this.exitMark) world.root.remove(this.exitMark);
-    const ep = lanePt(t, false, 24); this.exitMark = labelSprite('EXIT', '#1e6ef0'); this.exitMark.position.set(ep[0], 2, ep[1]); world.root.add(this.exitMark);
-    setPrompt(`Your exit: ${EXIT_NAME[t]}. Set your blinker, then press <b>GO</b> when it's safe.`, 'Give way to cars already in the roundabout (they come from your left).');
-    setFeedback(`<span class="it">Keys: ← left blinker · ↓ blinker off · → right blinker · Space = GO. The view looks left by default in Behind/Driver views; drag to look around.</span>`);
-    this.renderControls();
-    view.autoYaw = 0.6;
-  },
-  renderControls() {
-    const me = world.player; const b = me?.manualBlink;
-    const canGo = this.phase === 'waiting';
-    this.ctl = setAnswers([
-      { html: '⬅ blinker', key: '←', cls: b === 'L' ? 'on' : '', fn: () => this.setBlink('L') },
-      { html: 'off', key: '↓', cls: (b === null && this.blinkTouched) ? 'on' : '', fn: () => this.setBlink(null) },
-      { html: 'blinker ➡', key: '→', cls: b === 'R' ? 'on' : '', fn: () => this.setBlink('R') },
-      this.phase === 'done' ? { html: 'Next ▸', key: 'space', cls: 'go', fn: () => this.nextRound() }
-        : { html: 'GO', key: 'space', cls: 'go', disabled: !canGo, fn: () => this.go() },
-    ]);
-  },
-  setBlink(b) { const me = world.player; if (!me || this.phase === 'done') return; me.manualBlink = b; this.blinkTouched = true; this.renderControls(); },
-  key(k) {
-    if (k === 'ArrowLeft') this.setBlink('L'); else if (k === 'ArrowRight') this.setBlink('R'); else if (k === 'ArrowDown') this.setBlink(null);
-    else if (k === ' ' || k === 'Enter') { if (this.phase === 'waiting') this.go(); else if (this.phase === 'done') this.nextRound(); }
-  },
-  go() {
-    const me = world.player; if (this.phase !== 'waiting') return;
-    const w = entryThreat(S_, me);
-    let verdict = isSafe(w) ? 'good' : (w.t >= 2.4 && w.d >= 7) ? 'tight' : 'bad';
-    this.result.verdict = verdict; this.result.threat = w; this.result.blinkAtEntry = me.manualBlink; this.result.wait = T - this.arrivedAt;
-    me.committed = true; me.stopAt = null; this.phase = 'driving'; view.autoYaw = 0;
-    setPrompt(this.exitTurn === 1 ? 'Keep the ➡ right blinker on until you exit.' : `Now drive to your exit. Switch to <b>➡ right</b> only <b>after</b> passing the exit before yours.`, this.exitTurn === 3 ? 'Left blinker while circulating, then right.' : '');
-    if (verdict === 'bad') { flash('✗ You cut it off!', 'bad'); setRing(w.o, '#ff3b30'); }
-    else if (verdict === 'tight') { flash('⚠ Tight gap', 'warn'); setRing(w.o, '#ff9f0a'); }
-    else flash('✓ Safe entry', 'ok', 700);
-    stats.m3[verdict]++; stats.m3.n++; saveStats();
-    this.renderControls();
-  },
-  update(dt) {
-    this.sim(dt);
-    const me = world.player;
-    const hints = $('#hints').checked;
-    for (const c of world.cars) {
-      if (c.isPlayer) continue;
-      if (this.phase === 'driving' || this.phase === 'done') { if (c.ring && c.ring.material.color.getHex() !== 0xff3b30 && c.ring.material.color.getHex() !== 0xff9f0a) setRing(c, null); continue; }
-      if (!hints || !c.committed) { setRing(c, null); continue; }
-      const sp = c.path.pass[S_];
-      if (sp !== undefined && c.s < sp + 3 && sp - c.s < 40) setRing(c, '#ff3b30');
-      else if (c.path.b === S_ && c.s < c.path.s.out && c.s > c.path.s.merge - 3 && c.path.s.exit - c.s < 30) setRing(c, '#34c759');
-      else setRing(c, null);
-    }
-    if (!me) return;
-    if (this.phase === 'approach' && me.s >= me.stopAt - 0.3 && me.v < 0.3) { this.phase = 'waiting'; this.arrivedAt = T; this.renderControls(); }
-    if (this.phase === 'waiting') {
-      const safe = isSafe(entryThreat(S_, me));
-      if (safe) this.safeRun += dt;
-      else { if (this.safeRun > 2.5) { stats.m3.missed++; saveStats(); flash('Missed a safe gap', 'warn', 900); this.result.missed = (this.result.missed || 0) + 1; } this.safeRun = 0; }
-    }
-    if (this.phase === 'driving') {
-      const P = me.path;
-      if (P.s.prevExit !== undefined && !this.checkedPrev && me.s >= P.s.prevExit - 3) { this.checkedPrev = true; this.result.earlyRight = me.manualBlink === 'R'; }
-      if (!this.checkedExit && me.s >= P.s.exit - 1) { this.checkedExit = true; this.result.exitBlink = me.manualBlink; }
-      if (me.s >= P.s.out + 8) this.finishRound();
-    }
-  },
-  finishRound() {
-    this.phase = 'done'; const r = this.result, me = world.player;
-    if (me) me.manualBlink = null;
-    const want = WANT_BLINK[this.exitTurn];
-    const items = [];
-    if (r.verdict === 'good') items.push(`<li class="ok">✓ Safe entry: nobody had to brake for you${r.wait > 6 ? `, though you waited ${r.wait.toFixed(0)} s` : ''}.</li>`);
-    else {
-      const o = r.threat.o, bl = o.blink, passedExit = o.path.pass[S_] !== undefined && o.path.b !== S_;
-      let why = `A car already in the roundabout reached your entry ${r.threat.t < 0.1 ? 'at that moment' : `in about ${r.threat.t.toFixed(1)} s`}.`;
-      if (bl === 'R' && passedExit) why += ' It <b>was</b> signalling right, but for the <b>next</b> exit. It had already passed your road’s exit, so it had to cross your entry.';
-      else if (bl === 'L') why += ' It had its <b>left</b> blinker on, so it was staying in the roundabout.';
-      else why += ' It had <b>no right blinker</b>, so it was never going to exit before you.';
-      items.push(`<li class="${r.verdict === 'bad' ? 'bad' : 'warn'}">${r.verdict === 'bad' ? '✗ Unsafe: you forced it to brake.' : '⚠ Tight: legal, but the car behind had to slow down.'} ${why}</li>`);
-    }
-    if (r.missed) items.push(`<li class="warn">⚠ You let ${r.missed} safe gap${r.missed > 1 ? 's' : ''} go by. At the exam, too much hesitation is also an error.</li>`);
-    const bTxt = b => b === 'L' ? 'left' : b === 'R' ? 'right' : 'no blinker';
-    if (r.blinkAtEntry === want) items.push(`<li class="ok">✓ Entry blinker: ${bTxt(want)}.</li>`);
-    else items.push(`<li class="bad">✗ Entry blinker: you had <b>${bTxt(r.blinkAtEntry)}</b>, expected <b>${bTxt(want)}</b> for the ${['', '1st exit', '2nd exit (straight)', '3rd exit (left)'][this.exitTurn]}.</li>`);
-    if (this.exitTurn !== 1) {
-      if (r.earlyRight) items.push(`<li class="bad">✗ Right blinker too early: you put it on before passing the exit before yours. Drivers waiting there would think you were leaving.</li>`);
-      if (r.exitBlink === 'R') { if (!r.earlyRight) items.push(`<li class="ok">✓ Right blinker before your exit.</li>`); }
-      else items.push(`<li class="bad">✗ No right blinker when you exited. Switch to ➡ right after passing the exit before yours.</li>`);
-    } else if (r.exitBlink !== 'R') items.push(`<li class="bad">✗ Keep the right blinker on until you've exited.</li>`);
-    setFeedback(`<h3>Round summary</h3><ul>${items.join('')}</ul>`);
-    setPrompt('Round finished. Press <b>Next</b> (Space) for another entry.');
-    this.renderControls();
-  },
-  nextRound() {
-    for (const c of world.cars) if (c.ring) setRing(c, null);
-    if (world.player) { world.player.isPlayer = false; setLabel(world.player, null); world.player = null; }
-    this.blinkTouched = false; this.newPlayer();
-  },
-};
-
-const MODES = { m1: M1, m2: M2, m3: M3 };
-let current = null;
-function setMode(id) {
-  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.m === id));
-  const rules = id === 'rules';
-  $('#rules').style.display = rules ? 'block' : 'none';
-  $('#play').style.display = rules ? 'none' : 'block';
-  if (rules) { current = null; return; }
-  $('#optHints').style.display = id === 'm3' ? '' : 'none';
-  $('#optTraffic').style.display = id === 'm3' ? '' : 'none';
-  current = MODES[id]; setFeedback(''); flashEl.className = ''; timerEl.style.width = '0';
-  current.start(); showStats(); resize();
-  if (id === 'm1' && !introShown) { introShown = true; setFeedback(INTRO); }
-}
-let introShown = false;
-const INTRO = `<h3>How to use this trainer</h3><ul>
-<li><b>1 · Read the signal</b>: predict where the <b>?</b> car goes, using arrow keys from <i>your</i> point of view. This trains you to turn a blinker into a path.</li>
-<li><b>2 · Who goes first?</b>: random junctions with signs or none. Tap the cars in the order they go.</li>
-<li><b>3 · Roundabout live</b>: set your blinker and pick a safe gap. Going too late counts against you too.</li>
-<li>Start in <b>Top</b> view, then switch to <b>Driver</b> view (top-right, or press <b>V</b>): that's what the exam looks like.</li></ul>`;
-
-// =================================================================== input
-document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => setMode(b.dataset.m));
-function setView(v) {
-  view.mode = v; view.userYaw = 0;
-  document.querySelectorAll('#views button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
-  $('#look').style.display = v === 'top' ? 'none' : 'flex';
-  try { localStorage.setItem('precedenza-view', v); } catch (e) {}
-}
-document.querySelectorAll('#views button').forEach(b => b.onclick = e => { e.stopPropagation(); setView(b.dataset.v); });
-document.querySelectorAll('#look button').forEach(b => b.onclick = e => { e.stopPropagation(); const l = +b.dataset.l; view.userYaw = l === 0 ? -view.autoYaw : view.userYaw + l * 0.6; });
-window.addEventListener('keydown', e => {
-  if (!current) return;
-  if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT') return;
-  if (e.key === 'v' || e.key === 'V') { const order = ['top', 'chase', 'driver']; setView(order[(order.indexOf(view.mode) + 1) % 3]); return; }
-  if (e.key.startsWith('Arrow') || e.key === ' ') e.preventDefault();
-  current.key?.(e.key);
-});
-let drag = null;
-const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
-renderer.domElement.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, yaw: view.userYaw, moved: false }; });
-window.addEventListener('pointermove', e => { if (!drag) return; const dx = e.clientX - drag.x; if (Math.abs(dx) > 5) drag.moved = true; if (view.mode !== 'top' && drag.moved) view.userYaw = drag.yaw + dx * 0.006; });
-window.addEventListener('pointerup', e => {
-  if (!drag) return; const d = drag; drag = null;
-  if (d.moved || !current?.click) return;
-  const r = renderer.domElement.getBoundingClientRect();
-  ndc.set((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
-  ray.setFromCamera(ndc, view.mode === 'top' ? topCam : persCam);
-  const hits = ray.intersectObjects(world.cars.map(c => c.mesh), true);
-  for (const h of hits) { let o = h.object; while (o && !o.userData.car) o = o.parent; if (o) { current.click(o.userData.car); break; } }
-});
-
-// =================================================================== camera / loop
-function resize() {
-  const w = stage.clientWidth || 700;
-  const h = w < 560 ? clamp(Math.round(w * 1.25), 400, 640) : clamp(Math.round(w * 0.64), 380, 640);
-  stage.style.height = h + 'px';
-  renderer.setSize(w, h);
-  persCam.aspect = w / h; persCam.updateProjectionMatrix();
-  view.aspect = w / h;
-}
-new ResizeObserver(resize).observe(stage);
-function updateCamera(dt) {
-  if (view.mode === 'top') {
-    const Z = view.zoom, asp = view.aspect || 1.5, hh = asp < 1 ? Z / asp : Z;
-    topCam.left = -hh * asp; topCam.right = hh * asp; topCam.top = hh; topCam.bottom = -hh; topCam.updateProjectionMatrix();
-    topCam.position.set(0, 80, view.cz); topCam.lookAt(0, 0, view.cz);
-    return topCam;
-  }
-  const c = world.player;
-  const px = c ? c.x : 1.75, pz = c ? c.z : 12, fx = c ? c.dx : 0, fz = c ? c.dz : -1;
-  const yaw = view.autoYaw + view.userYaw;
-  view.yawS += (yaw - view.yawS) * Math.min(1, dt * 4);
-  const cy = Math.cos(view.yawS), sy = Math.sin(view.yawS);
-  const lx = fx * cy + fz * sy, lz = -fx * sy + fz * cy;
-  if (view.mode === 'chase') {
-    persCam.fov = 64; persCam.position.set(px - fx * 9, 4.6, pz - fz * 9);
-    persCam.lookAt(px + lx * 18, 0.4, pz + lz * 18);
-  } else {
-    persCam.fov = 74; const lfx = fz, lfz = -fx; // left vector
-    persCam.position.set(px + fx * 0.1 - lfx * 0.35, 1.25, pz + fz * 0.1 - lfz * 0.35);
-    persCam.lookAt(persCam.position.x + lx * 10, 1.0, persCam.position.z + lz * 10);
-  }
-  persCam.updateProjectionMatrix();
-  return persCam;
-}
-let last = performance.now();
-function loop(now) {
-  const dt = Math.min(0.05, (now - last) / 1000); last = now;
-  if (current) {
-    T += dt;
-    current.update(dt);
-    updateLights();
-    if (world.player) { world.player.mesh.visible = view.mode !== 'driver'; if (world.player.label) world.player.label.visible = view.mode === 'top'; }
-    renderer.render(scene, updateCamera(dt));
-  }
-  requestAnimationFrame(loop);
-}
-let savedView = 'top'; try { savedView = localStorage.getItem('precedenza-view') || 'top'; } catch (e) {}
-setView(savedView);
-resize();
-setMode('m1');
-requestAnimationFrame(loop);
-window.__debug = { world, MODES, interPath, rbPath, pathsConflict, mustYield, get current() { return current; } };
-</script>
+<script type="module" src="js/main.js"></script>
 </body>
 </html>
